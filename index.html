@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Roobet Clips · Tracker</title>
+<style>
+  :root {
+    --bg:       #0a0a0a;
+    --card:     #111111;
+    --card2:    #161616;
+    --border:   #222222;
+    --text:     #f0f0f0;
+    --muted:    #666666;
+    --accent:   #00c896;
+    --purple:   #8b7cf8;
+    --blue:     #4a9ef8;
+    --amber:    #f5a623;
+    --bronze:   #cd7f32;
+    --red:      #ff5252;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; min-height: 100vh; }
+
+  .app { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+
+  /* Header */
+  .header { margin-bottom: 24px; }
+  .header h1 { font-size: 22px; font-weight: 700; color: var(--accent); letter-spacing: 0.5px; margin-bottom: 6px; }
+  .header-meta { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+  .header-meta span { font-size: 13px; color: var(--muted); }
+  .header-meta .hl { color: var(--text); font-weight: 500; }
+  .days-pill { font-size: 12px; padding: 3px 10px; border-radius: 20px; background: #1a1a1a; border: 1px solid var(--border); }
+  .days-urgent { border-color: var(--red); color: var(--red); }
+
+  /* KPI row */
+  .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 28px; }
+  .kpi { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+  .kpi-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+  .kpi-val { font-size: 22px; font-weight: 700; color: var(--accent); }
+
+  /* Account cards */
+  .cards { display: flex; flex-direction: column; gap: 10px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; transition: border-color 0.2s; }
+  .card:hover { border-color: #333; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+  .card-left { display: flex; align-items: center; gap: 10px; }
+  .acc-name { font-size: 15px; font-weight: 600; color: var(--text); }
+  .tier-badge { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+  .card-right { display: flex; align-items: center; gap: 8px; }
+  .rate-tag { font-size: 11px; color: var(--muted); background: #1a1a1a; border: 1px solid var(--border); padding: 3px 8px; border-radius: 6px; }
+
+  /* Stats */
+  .card-stats { display: flex; gap: 24px; margin-bottom: 12px; flex-wrap: wrap; }
+  .stat { }
+  .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 2px; }
+  .stat-val { font-size: 20px; font-weight: 700; color: var(--text); }
+  .stat-sub { font-size: 11px; color: var(--muted); }
+
+  /* Progress bar */
+  .progress-wrap { margin-bottom: 10px; }
+  .progress-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .progress-label { font-size: 11px; color: var(--muted); }
+  .progress-pct { font-size: 13px; font-weight: 700; }
+  .pbar-bg { height: 8px; background: #1e1e1e; border-radius: 4px; overflow: hidden; }
+  .pbar-fill { height: 100%; border-radius: 4px; transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
+
+  /* Footer info */
+  .card-foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  .next-info { font-size: 12px; color: var(--muted); }
+  .next-info span { font-weight: 600; }
+  .next-info .ok { color: var(--accent); }
+  .per-day { font-size: 12px; font-weight: 600; color: var(--amber); background: #1e1800; border: 1px solid #3d3000; padding: 3px 10px; border-radius: 6px; }
+  .per-day.done { color: var(--accent); background: #002a1e; border-color: #005040; }
+
+  /* Input area */
+  .input-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .input-row label { font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .vid-input { width: 80px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; color: var(--text); font-size: 14px; font-weight: 600; padding: 6px 10px; text-align: center; outline: none; }
+  .vid-input:focus { border-color: var(--accent); }
+  .save-btn { background: transparent; border: 1px solid #333; border-radius: 8px; color: var(--text); font-size: 12px; padding: 6px 14px; cursor: pointer; transition: all 0.15s; }
+  .save-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .save-btn:active { transform: scale(0.97); }
+  .saved-msg { font-size: 11px; color: var(--accent); opacity: 0; transition: opacity 0.3s; }
+  .saved-msg.show { opacity: 1; }
+
+  /* Tier colors */
+  .tb-bronze  { background: #2a1500; color: var(--bronze); border: 1px solid #3d2000; }
+  .tb-silver  { background: #1a1a1a; color: #a8a8a8;       border: 1px solid #333; }
+  .tb-gold    { background: #2a1800; color: var(--amber);   border: 1px solid #3d2800; }
+  .tb-diamond { background: #001a3d; color: var(--blue);    border: 1px solid #003070; }
+  .tb-master  { background: #1a0050; color: var(--purple);  border: 1px solid #2a0080; }
+  .tb-above   { background: #002a1e; color: var(--accent);  border: 1px solid #005040; }
+
+  .pf-bronze  { background: var(--bronze); }
+  .pf-silver  { background: #a8a8a8; }
+  .pf-gold    { background: var(--amber); }
+  .pf-diamond { background: var(--blue); }
+  .pf-master  { background: var(--purple); }
+  .pf-above   { background: var(--accent); }
+
+  .pc-bronze  { color: var(--bronze); }
+  .pc-silver  { color: #a8a8a8; }
+  .pc-gold    { color: var(--amber); }
+  .pc-diamond { color: var(--blue); }
+  .pc-master  { color: var(--purple); }
+  .pc-above   { color: var(--accent); }
+
+  /* Footer */
+  .page-footer { text-align: center; margin-top: 40px; font-size: 12px; color: #333; }
+
+  @media (max-width: 500px) {
+    .kpi-val { font-size: 18px; }
+    .acc-name { font-size: 14px; }
+    .card-stats { gap: 16px; }
+    .stat-val { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>ROOBET CLIPS · ACCOUNT TRACKER</h1>
+    <div class="header-meta">
+      <span id="cycle-month" class="hl"></span>
+      <span id="cycle-days" class="days-pill"></span>
+      <span id="cycle-close"></span>
+    </div>
+  </div>
+  <div class="kpi-row" id="kpi-row"></div>
+  <div class="cards" id="cards"></div>
+  <div class="page-footer">Los datos se guardan en este dispositivo · abrí desde otro dispositivo para sincronizar</div>
+</div>
+
+<script>
+const TIERS = {
+  'Bronze':    { rate: 1500, goal: 30,  next: 'Silver',    cls: 'bronze'  },
+  'Silver':    { rate: 1550, goal: 40,  next: 'Gold',      cls: 'silver'  },
+  'Gold':      { rate: 1600, goal: 50,  next: 'Diamond',   cls: 'gold'    },
+  'Diamond':   { rate: 1650, goal: 100, next: 'Master',    cls: 'diamond' },
+  'Master':    { rate: 1750, goal: 250, next: 'Above All', cls: 'master'  },
+  'Above All': { rate: 2000, goal: 250, next: null,        cls: 'above'   },
+};
+
+const ACCOUNTS = [
+  { name: 'Yoshua',    tier: 'Master'  },
+  { name: 'LAckerman', tier: 'Master'  },
+  { name: 'Manuel',    tier: 'Master'  },
+  { name: 'Annie',     tier: 'Master'  },
+  { name: 'Vergik',    tier: 'Bronze'  },
+  { name: 'Biggie',    tier: 'Bronze'  },
+  { name: 'RoosterB',  tier: 'Diamond' },
+];
+
+const KEY = 'roobet_v3';
+function load() { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch(e) { return {}; } }
+function save(d) { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch(e) {} }
+
+function getDays() {
+  const now = new Date();
+  const last = new Date(now.getFullYear(), now.getMonth()+1, 0);
+  const daysLeft = last.getDate() - now.getDate();
+  const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  return {
+    daysLeft,
+    total: last.getDate(),
+    monthName: months[now.getMonth()],
+    year: now.getFullYear(),
+    closeDate: `${String(last.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`
+  };
+}
+
+function render() {
+  const data = load();
+  const { daysLeft, total, monthName, year, closeDate } = getDays();
+
+  document.getElementById('cycle-month').textContent = `${monthName.toUpperCase()} ${year}`;
+  const dp = document.getElementById('cycle-days');
+  dp.textContent = `${daysLeft} días restantes de ${total}`;
+  if (daysLeft <= 5) dp.classList.add('days-urgent');
+  document.getElementById('cycle-close').textContent = `Ciclo cierra: ${closeDate}`;
+  document.getElementById('cycle-close').style.color = '#444';
+  document.getElementById('cycle-close').style.fontSize = '12px';
+
+  // KPIs
+  const totalVids = ACCOUNTS.reduce((s, a) => s + (data[a.name] || 0), 0);
+  const masterCount = ACCOUNTS.filter(a => a.tier === 'Master').length;
+  const aboveCount = ACCOUNTS.filter(a => a.tier === 'Above All').length;
+  const avgRate = Math.round(ACCOUNTS.reduce((s,a) => s + TIERS[a.tier].rate, 0) / ACCOUNTS.length);
+  const readyCount = ACCOUNTS.filter(a => (data[a.name]||0) >= TIERS[a.tier].goal).length;
+
+  document.getElementById('kpi-row').innerHTML = [
+    ['Cuentas activas', ACCOUNTS.length],
+    ['Total videos', totalVids],
+    ['En Master', masterCount],
+    ['En Above All', aboveCount],
+    ['Rate prom.', `$${avgRate.toLocaleString()}`],
+    ['Listos', readyCount],
+  ].map(([l,v]) => `<div class="kpi"><div class="kpi-label">${l}</div><div class="kpi-val">${v}</div></div>`).join('');
+
+  // Cards
+  document.getElementById('cards').innerHTML = ACCOUNTS.map(acc => {
+    const td = TIERS[acc.tier];
+    const vids = data[acc.name] || 0;
+    const goal = td.goal;
+    const pct = Math.min(100, Math.round((vids / goal) * 100));
+    const rem = Math.max(0, goal - vids);
+    const cls = td.cls;
+    const isAbove = acc.tier === 'Above All';
+    const done = vids >= goal;
+    const needDay = daysLeft > 0 ? Math.ceil(rem / daysLeft) : rem;
+    const dest = isAbove ? 'mantener Above All' : `subir a ${td.next}`;
+
+    return `
+    <div class="card">
+      <div class="card-head">
+        <div class="card-left">
+          <span class="acc-name">${acc.name}</span>
+          <span class="tier-badge tb-${cls}">${acc.tier}</span>
+        </div>
+        <div class="card-right">
+          <span class="rate-tag">$${td.rate.toLocaleString()} / 1M</span>
+        </div>
+      </div>
+
+      <div class="card-stats">
+        <div class="stat">
+          <div class="stat-label">Videos</div>
+          <div class="stat-val">${vids}</div>
+          <div class="stat-sub">de ${goal}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Progreso</div>
+          <div class="stat-val pc-${cls}">${pct}%</div>
+          <div class="stat-sub">${done ? '✓ Meta alcanzada' : `${rem} restantes`}</div>
+        </div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-top">
+          <span class="progress-label">${isAbove ? 'Retención del tier' : `Progreso hacia ${td.next}`}</span>
+          <span class="progress-pct pc-${cls}">${pct}%</span>
+        </div>
+        <div class="pbar-bg">
+          <div class="pbar-fill pf-${cls}" style="width:${pct}%"></div>
+        </div>
+      </div>
+
+      <div class="card-foot">
+        <div class="next-info">
+          ${done
+            ? `<span class="ok">✓ Listo para ${isAbove ? 'mantener' : td.next}</span>`
+            : `Faltan <span>${rem} videos</span> para ${dest}`}
+        </div>
+        ${done
+          ? `<span class="per-day done">✓ Meta alcanzada</span>`
+          : `<span class="per-day">${needDay}/día</span>`}
+      </div>
+
+      <div class="input-row">
+        <label>Videos subidos:</label>
+        <input class="vid-input" type="number" min="0" step="1" value="${vids}" id="inp-${acc.name}" onkeydown="if(event.key==='Enter')updateVids('${acc.name}')" />
+        <button class="save-btn" onclick="updateVids('${acc.name}')">Guardar</button>
+        <span class="saved-msg" id="msg-${acc.name}">Guardado ✓</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateVids(name) {
+  const val = Math.max(0, parseInt(document.getElementById('inp-'+name).value)||0);
+  const d = load();
+  d[name] = val;
+  save(d);
+  render();
+  const msg = document.getElementById('msg-'+name);
+  if (msg) { msg.classList.add('show'); setTimeout(()=>msg.classList.remove('show'), 2000); }
+}
+
+render();
+</script>
+</body>
+</html>
